@@ -167,25 +167,42 @@
 }
 
 /* Light theme */
-div[role=raml-editor].light [role=browser] {
-  color: rgb(202,204,212);
+div[role=raml-editor].light {
+  [role=browser] {
+    color: rgb(202,204,212);
 
-  ul[role=file-list] {
-    background-color: white;
-    color: #aaa;
-    background-color: white;
-    border: 1px solid rgb(131,148,150);
+    .file-list {
+      color: #999;
+      background-color: white;
+      border: 1px solid rgb(131,148,150);
 
-    li {
-      &:not(.currentfile):hover {
-        color: #eee;
-        background-color: #caccd4;
+      .drag-elm div {
+        color: #ddd;
       }
 
-      &.currentfile {
-        color: #ddd;
-        background-color: rgb(47,124,166);
+      .file-item {
+        &:not(.currentfile):hover {
+          color: #444;
+        }
+
+        &.currentfile {
+          color: #ddd;
+          background-color: lighten(@cello_blue, 30%);
+        }
+
+        &.dragover {
+          color: #444;
+          background-color: #ddd;
+
+          &.directory {
+            background-color: lighten(@cello_blue, 50%);
+          }
+        }
       }
     }
+  }
+
+  .angular-ui-tree-drag {
+    color: #444;
   }
 }

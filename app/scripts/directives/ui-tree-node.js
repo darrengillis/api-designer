@@ -113,7 +113,7 @@
 
               scope.$element.after(hiddenPlaceElm);
               dragElm.append(scope.$element.clone().html(scope.$element.children()[0].innerHTML));
-              $document.find('body').append(dragElm);
+              $document.find('raml-editor').children().append(dragElm);
               dragElm.css({
                 'left' : eventObj.pageX - pos.offsetX + 'px',
                 'top'  : eventObj.pageY - pos.offsetY + 'px'
