@@ -4,9 +4,9 @@
   angular.module('ramlEditorApp')
     .directive('ramlEditorNewFolderButton', function ramlEditorNewFolderButton(
       $injector,
-      ramlEditorInputPrompt,
       ramlRepository,
-      generateName
+      generateName,
+      newNameModal
     ) {
       return {
         restrict: 'E',
@@ -18,11 +18,6 @@
             var defaultName   = generateName(parent.getDirectories().map(function (d){return d.name;}), 'Folder');
             var message       = 'Input a name for your new folder:';
             var title         = 'Add a new folder';
-
-            // check if the modal service exists
-            var inputMethod = $injector.has('newNameModal') ?
-              $injector.get('newNameModal') :
-              ramlEditorInputPrompt;
 
             var validations = [
               {
@@ -40,7 +35,7 @@
               }
             ];
 
-            inputMethod.open(message, defaultName, validations, title)
+            newNameModal.open(message, defaultName, validations, title)
               .then(function(name) {
                 ramlRepository.createDirectory(parent, name);
               });

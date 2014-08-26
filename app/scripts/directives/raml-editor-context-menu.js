@@ -6,8 +6,9 @@
       $window,
       $injector,
       ramlRepository,
-      ramlEditorInputPrompt,
-      scroll
+      scroll,
+      newNameModal,
+      confirmModal
     ) {
       function createActions(target) {
         var actions = [
@@ -31,16 +32,12 @@
                 message = 'Are you sure you want to delete "' + target.name + '"?';
                 title = 'Remove file';
               }
-
-              if ($injector.has('confirmModal')) {
-                $injector.get('confirmModal')
-                  .open(message, title)
-                  .then(function (confirmed) {
-                    confirmed ? ramlRepository.remove(target) : void(0);
-                  });
-              } else {
-                $window.confirm(message) ? ramlRepository.remove(target) : void(0);
-              }
+              
+              confirmModal
+                .open(message, title)
+                .then(function (confirmed) {
+                  confirmed ? ramlRepository.remove(target) : void(0);
+                });
             }
           },
           {
@@ -49,11 +46,6 @@
               var message;
               var parent = ramlRepository.getParent(target);
               var title  = 'Rename a file';
-
-              // check if the modal service exists
-              var inputMethod = $injector.has('newNameModal') ?
-                $injector.get('newNameModal') :
-                ramlEditorInputPrompt;
 
               if (target.isDirectory) {
                 message = 'Input a new name for this folder:';
@@ -78,7 +70,7 @@
                 }
               ];
 
-              inputMethod.open(message, target.name, validations, title)
+              newNameModal.open(message, target.name, validations, title)
                 .then(function(name){
                   ramlRepository.rename(target, name);
                 });

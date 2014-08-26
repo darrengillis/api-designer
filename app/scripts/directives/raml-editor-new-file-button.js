@@ -4,9 +4,9 @@
   angular.module('ramlEditorApp')
     .directive('ramlEditorNewFileButton', function ramlEditorNewFileButton(
       $injector,
-      ramlEditorInputPrompt,
       ramlRepository,
-      generateName
+      generateName,
+      newNameModal
     ) {
       return {
         restrict: 'E',
@@ -22,11 +22,6 @@
               'For a new RAML spec, be sure to name your file <something>.raml; ',
               'For files to be !included, feel free to use an extension or not.'
             ].join('');
-
-            // check if the modal service exists
-            var inputMethod = $injector.has('newNameModal') ?
-              $injector.get('newNameModal') :
-              ramlEditorInputPrompt;
 
             var validations = [
               {
@@ -44,7 +39,7 @@
               }
             ];
 
-            inputMethod.open(message, defaultName, validations, title)
+            newNameModal.open(message, defaultName, validations, title)
               .then(function(name) {
                 ramlRepository.createFile(parent, name);
               })
