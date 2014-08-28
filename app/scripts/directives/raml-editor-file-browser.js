@@ -58,7 +58,6 @@
               * This callback is called when a node is dropped on to the tree
               */
             dropped: function(event) {
-              var parent;
               var source = event.source.nodeScope.$modelValue;
               var dest = event.dest.nodesScope.$nodeScope ?
                 event.dest.nodesScope.$nodeScope.$modelValue :
@@ -67,17 +66,17 @@
               // do the actual moving
               ramlRepository.move(source, dest)
                 .then(function () {
-                  parent = ramlRepository.getParent(source);
+                  fileBrowser.select(source);
                 });
             },
             /**
               * This callback is called when the drag ends or gets canceled
               */
-            dragStop: function() {
+            dragStop: function(event) {
               // when drag is stopped or canceled, reset the cursor
               fileBrowser.cursorState = '';
 
-              if (duplicateName) {
+              if (!event.canceled && duplicateName) {
                 $rootScope.$broadcast('event:notification', {
                   message: 'Failed: duplicate file name found in the destination folder.',
                   expires: true,
@@ -100,7 +99,6 @@
             return;
           }
 
-          config.set('currentFile', JSON.stringify({path: file.path, name: file.name}));
           unwatchSelectedFile();
 
           var isLoaded     = file.loaded || !file.persisted;
@@ -217,6 +215,13 @@
 
         $scope.$on('$destroy', function () {
           $window.removeEventListener('keydown', saveListener);
+        });
+
+        // watch for current file changes
+        $scope.$watch('fileBrowser.selectedFile.path', function (newPath, oldPath) {
+          if (newPath !== oldPath) {
+            config.set('currentFile', JSON.stringify({path: newPath}));
+          }
         });
 
         function promptWhenFileListIsEmpty() {

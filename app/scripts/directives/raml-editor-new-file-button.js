@@ -31,11 +31,6 @@
                     return file.name.toLowerCase() === input.toLowerCase();
                   });
                 }
-              } , {
-                message: 'File name cannot be empty.',
-                validate: function(input) {
-                  return input.length > 0;
-                }
               }
             ];
 

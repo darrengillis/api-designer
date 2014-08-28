@@ -7,15 +7,15 @@
   'use strict';
 
   angular.module('ui.tree')
-    .directive('uiTreeNode', ['treeConfig', '$uiTreeHelper', '$window', '$document','$timeout', 'ramlRepository',
-      function (treeConfig, $uiTreeHelper, $window, $document, $timeout, ramlRepository) {
+    .directive('uiTreeNode', ['treeConfig', '$uiTreeHelper', '$window', '$document','$timeout', 'ramlRepository', 'config',
+      function (treeConfig, $uiTreeHelper, $window, $document, $timeout, ramlRepository, config) {
         return {
           require: ['^uiTreeNodes', '^uiTree', '?uiTreeNode'],
           link: function(scope, element, attrs, controllersArr) {
-            var config = {};
-            angular.extend(config, treeConfig);
-            if (config.nodeClass) {
-              element.addClass(config.nodeClass);
+            var currentConfig = {};
+            angular.extend(currentConfig, treeConfig);
+            if (currentConfig.nodeClass) {
+              element.addClass(currentConfig.nodeClass);
             }
             scope.init(controllersArr);
 
@@ -39,6 +39,7 @@
             var dragDelaying = true;
             var dragStarted  = false;
             var dragTimer    = null;
+            var dragCanceled = false;
             var expandTimer  = null;
             var expandDelay  = 1000;  // ms
             var body         = document.body,
@@ -103,17 +104,19 @@
               var tagName = scope.$element.prop('tagName');
 
               hiddenPlaceElm = angular.element($window.document.createElement(tagName));
-              if (config.hiddenClass) {
-                hiddenPlaceElm.addClass(config.hiddenClass);
+              if (currentConfig.hiddenClass) {
+                hiddenPlaceElm.addClass(currentConfig.hiddenClass);
               }
               pos = $uiTreeHelper.positionStarted(eventObj, scope.$element);
               dragElm = angular.element($window.document.createElement(scope.$parentNodesScope.$element.prop('tagName')))
-                        .addClass(scope.$parentNodesScope.$element.attr('class')).addClass(config.dragClass);
+                        .addClass(scope.$parentNodesScope.$element.attr('class'))
+                        .addClass(currentConfig.dragClass)
+                        .addClass(config.get('theme') === 'light' ? 'drag-light' : '');
               dragElm.css('z-index', 9999);
 
               scope.$element.after(hiddenPlaceElm);
               dragElm.append(scope.$element.clone().html(scope.$element.children()[0].innerHTML));
-              $document.find('raml-editor').children().append(dragElm);
+              $document.find('body').append(dragElm);
               dragElm.css({
                 'left' : eventObj.pageX - pos.offsetX + 'px',
                 'top'  : eventObj.pageY - pos.offsetY + 'px'
@@ -153,7 +156,7 @@
               }
 
               var eventObj = $uiTreeHelper.eventObj(e);
-              var leftElmPos, topElmPos;
+              var leftElmPos, topElmPos, boundingRect;
 
               if (dragElm) {
                 e.preventDefault();
@@ -165,26 +168,27 @@
                 }
 
                 leftElmPos = eventObj.pageX - pos.offsetX;
-                topElmPos = eventObj.pageY - pos.offsetY;
+                topElmPos  = eventObj.pageY - pos.offsetY;
 
-                //dragElm can't leave the screen on the left
-                if(leftElmPos < 0){
+                boundingRect = {
+                  left:   leftElmPos,
+                  right:  leftElmPos + dragElm[0].scrollWidth + 5,  // extra 5px padding
+                  top:    topElmPos,
+                  bottom: topElmPos + dragElm[0].scrollHeight
+                };
+
+                // check horizontal boundaries
+                if(boundingRect.left < 0){
                   leftElmPos = 0;
+                } else if(boundingRect.right > documentWidth) {
+                  leftElmPos = documentWidth - dragElm[0].scrollWidth - 5;
                 }
 
-                //dragElm can't leave the screen on the top
-                if(topElmPos < 0){
+                // check vertical boundaries
+                if(boundingRect.top < 0){
                   topElmPos = 0;
-                }
-
-                //dragElm can't leave the screen on the bottom
-                if ((topElmPos + 10) > documentHeight){
-                  topElmPos = documentHeight - 10;
-                }
-
-                //dragElm can't leave the screen on the right
-                if((leftElmPos + 10) > documentWidth) {
-                  leftElmPos = documentWidth - 10;
+                } else if (boundingRect.bottom > documentHeight){
+                  topElmPos = documentHeight - dragElm[0].scrollHeight;
                 }
 
                 dragElm.css({
@@ -211,20 +215,20 @@
                   return;
                 }
 
-                // check if add it as a child node first
-                var targetX = eventObj.pageX - $window.document.body.scrollLeft;
-                var targetY = eventObj.pageY - (window.pageYOffset || $window.document.documentElement.scrollTop);
-
                 // Select the drag target. Because IE does not support CSS 'pointer-events: none', it will always
                 // pick the drag element itself as the target. To prevent this, we hide the drag element while
                 // selecting the target.
                 var displayElm;
+
                 if (angular.isFunction(dragElm.hide)) {
                   dragElm.hide();
                 }else{
                   displayElm = dragElm[0].style.display;
                   dragElm[0].style.display = 'none';
                 }
+
+                var targetX = eventObj.pageX - $window.document.body.scrollLeft;
+                var targetY = eventObj.pageY - (window.pageYOffset || $window.document.documentElement.scrollTop);
 
                 // when using elementFromPoint() inside an iframe, you have to call
                 // elementFromPoint() twice to make sure IE8 returns the correct value
@@ -334,7 +338,9 @@
                   bindDrag();
                 }
                 scope.$treeScope.$apply(function() {
-                  scope.$callbacks.dragStop(dragInfo.eventArgs(elements, pos));
+                  var eventArgs = dragInfo.eventArgs(elements, pos);
+                  eventArgs.canceled = dragCanceled;
+                  scope.$callbacks.dragStop(eventArgs);
                 });
                 scope.$$apply = false;
                 dragInfo = null;
@@ -347,10 +353,12 @@
               angular.element($document).unbind('mousemove', dragMoveEvent);
               angular.element($window.document.body).unbind('mouseleave', dragCancelEvent);
 
+              // reset variables
               $('.dragover').removeClass('dragover');
               scope.$element.removeClass('drag-elm');
               scope.$treeScope.isDragging = false;
               scope.prevHoverNode         = null;
+              dragCanceled                = false;
             };
 
             // find the index to insert a element into a sorted array
@@ -383,6 +391,8 @@
             };
 
             var dragCancelEvent = function(e) {
+              scope.$$apply = false;
+              dragCanceled  = true;
               dragEnd(e);
             };
 
@@ -404,8 +414,7 @@
 
             angular.element($window.document.body).bind('keydown', function(e) {
               if (e.keyCode === 27) {
-                scope.$$apply = false;
-                dragEnd(e);
+                dragCancelEvent(e);
               }
             });
           }

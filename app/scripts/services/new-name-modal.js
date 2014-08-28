@@ -41,10 +41,13 @@
       $scope.validationErrorMessage = '';
 
       $scope.isValid = function isValid(value) {
-        for (var i = 0; i < validations.length; i++) {
-          if (!validations[i].validate(value)) {
-            $scope.validationErrorMessage = validations[i].message;
-            return false;
+        // only start custom validators when the input is not null
+        if (value && value.length > 0) {
+          for (var i = 0; i < validations.length; i++) {
+            if (!validations[i].validate(value)) {
+              $scope.validationErrorMessage = validations[i].message;
+              return false;
+            }
           }
         }
         return true;

@@ -32,7 +32,7 @@
                 message = 'Are you sure you want to delete "' + target.name + '"?';
                 title = 'Remove file';
               }
-              
+
               confirmModal
                 .open(message, title)
                 .then(function (confirmed) {
@@ -61,11 +61,6 @@
                     return !parent.children.some(function (t) {
                       return t.name.toLowerCase() === input.toLowerCase();
                     });
-                  }
-                }, {
-                  message: 'New name cannot be empty.',
-                  validate: function(input) {
-                    return input.length > 0;
                   }
                 }
               ];

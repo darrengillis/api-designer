@@ -27,11 +27,6 @@
                     return directory.name.toLowerCase() === input.toLowerCase();
                   });
                 }
-              } , {
-                message: 'Folder name cannot be empty.',
-                validate: function(input) {
-                  return input.length > 0;
-                }
               }
             ];
 

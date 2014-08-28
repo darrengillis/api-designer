@@ -141,6 +141,10 @@
         cursor: copy !important;
       }
 
+      /* Patch for embedded designer */
+      [ng-click] {
+        cursor: inherit;
+      }
     }
   }
 }
@@ -201,8 +205,8 @@ div[role=raml-editor].light {
       }
     }
   }
+}
 
-  .angular-ui-tree-drag {
-    color: #444;
-  }
+.drag-light {
+  color: #444;
 }
