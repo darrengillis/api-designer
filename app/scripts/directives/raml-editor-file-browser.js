@@ -9,7 +9,7 @@
       config,
       eventService,
       ramlRepository,
-      ramlEditorInputPrompt
+      newNameModal
     ) {
       function Controller($scope) {
         var fileBrowser         = this;
@@ -217,23 +217,20 @@
           $window.removeEventListener('keydown', saveListener);
         });
 
-        // watch for current file changes
+        // watch for selected file path changes, update config if needed
         $scope.$watch('fileBrowser.selectedFile.path', function (newPath, oldPath) {
           if (newPath !== oldPath) {
-            config.set('currentFile', JSON.stringify({path: newPath}));
+            config.set('currentFile', JSON.stringify({path: newPath, name: newPath.slice(newPath.lastIndexOf('/') + 1)}));
           }
         });
 
         function promptWhenFileListIsEmpty() {
           var defaultName = 'Untitled-1.raml';
           var message     = 'File system has no files, please input a name for the new file:';
-          var validation  = [{
-            message: 'File name cannot be empty.',
-            validate: function(input) {
-              return input.length > 0;
-            }
-          }];
-          ramlEditorInputPrompt.open(message, defaultName, validation).then(
+          var validation  = [];
+          var title       = 'Add a new file';
+
+          newNameModal.open(message, defaultName, validation, title).then(
             function (result) {
               ramlRepository.createFile($scope.homeDirectory, result);
             },

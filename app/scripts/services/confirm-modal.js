@@ -33,10 +33,6 @@
         message: message,
         title:   title
       };
-
-      $scope.submit = function submit(value) {
-        $modalInstance.close(value);
-      };
     })
   ;
 })();

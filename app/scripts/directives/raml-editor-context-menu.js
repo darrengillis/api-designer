@@ -35,8 +35,8 @@
 
               confirmModal
                 .open(message, title)
-                .then(function (confirmed) {
-                  confirmed ? ramlRepository.remove(target) : void(0);
+                .then(function () {
+                  ramlRepository.remove(target);
                 });
             }
           },
