@@ -345,24 +345,23 @@ label {
   padding: 4px 12px;
   font-size: 14px;
   line-height: 1.42857143;
-  color: #515c6b;
+  color: @text-color;
   background-color: #ffffff;
   background-image: none;
   border: 1px solid rgba(81, 92, 107, 0.2);
   border-radius: 4px;
   box-shadow: none;
   text-overflow: ellipsis;
-  -webkit-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
   transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
 }
 
 .has-error .help-block,
 .has-error .control-label {
-  color: #a94442;
+  color: @brand-danger;
 }
 
 .has-error .form-control {
-  border-color: #a94442;
+  border-color: @brand-danger;
   box-shadow: none;
 }
 
@@ -392,7 +391,6 @@ label {
 // Buttons
 .btn {
   display: inline-block;
-  margin-bottom: 0;
   font-weight: normal;
   text-align: center;
   vertical-align: middle;
@@ -404,26 +402,29 @@ label {
   font-size: 14px;
   line-height: 1.42857143;
   border-radius: 4px;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
   user-select: none;
 }
 
 .btn-default {
-  color: #515c6b;
-  background-color: #f3f3f3;
+  &:hover {
+    background-color: darken(@gray-lighter, 10%);
+  }
+  color: @text-color;
+  background-color: @gray-lighter;
   border: none;
   min-width: 70px;
-  box-shadow: inset 0 -1px 1px -1px #676767;
+  box-shadow: inset 0 -1px 1px -1px darken(@gray-lighter, 60%);
 }
 
 .btn-primary {
+  &:hover {
+    background-color: darken(@brand-primary, 10%);
+  }
   color: #ffffff;
-  background-color: #26b178;
+  background-color: @brand-primary;
   border: none;
   min-width: 70px;
-  box-shadow: inset 0 -1px 1px -1px #020906;
+  box-shadow: inset 0 -1px 1px -1px darken(@brand-primary, 60%)
 }
 
 // Scale up the modal
